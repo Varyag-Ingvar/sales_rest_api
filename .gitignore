@@ -1,0 +1,6 @@
+.idea/
+/venv/
+/users/migrations/
+/orders/migrations/
+/shops/migrations/
+*.sqlite3

@@ -33,7 +33,7 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         gettext_lazy('active'),
-        default=False,
+        default=True,   # changed, it was False
         help_text=gettext_lazy(
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'

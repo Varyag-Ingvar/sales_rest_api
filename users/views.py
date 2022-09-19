@@ -50,6 +50,32 @@ class RegisterAccount(APIView):
                                    'first_name, last_name, email, password, company, position'}, status=401)
 
 
+class LoginAccount(APIView):
+    """
+    Класс для авторизации пользователей.
+    """
+
+    throttle_scope = 'anon'
+
+    def post(self, request, *args, **kwargs):
+        """
+        Авторизация пользователя.
+        Проверяет обязательные поля (пароль и email), создает токен для пользователя.
+        """
+        if {'email', 'password'}.issubset(request.data):
+            user = authenticate(request, username=request.data['email'], password=request.data['password'])
+            if user is not None:
+                if user.is_active:
+                    token, _ = Token.objects.get_or_create(user=user)
+                    return Response({'Status': True, 'Token': token.key}, status=200)
+
+            return Response({'Status': False,
+                             'Errors': 'Не удалось авторизовать'}, status=403)
+
+        return Response({'Status': False,
+                         'Errors': 'Не указаны все необходимые аргументы'}, status=401)
+
+
 class ConfirmAccount(APIView):
     """
     Класс для подтверждения почтового адреса
@@ -63,7 +89,8 @@ class ConfirmAccount(APIView):
         и подтверждает регистрацию пользователя в системе
         """
         if {'email', 'token'}.issubset(request.data):
-            token = ConfirmEmailToken.objects.filter(user__email=request.data['email'],
+            # variable token changed
+            token = Token.objects.filter(user__email=request.data['email'],
                                                      key=request.data['token']).first()
             if token:
                 token.user.is_active = True
@@ -95,32 +122,6 @@ class AccountDetails(APIView):
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
-
-
-class LoginAccount(APIView):
-    """
-    Класс для авторизации пользователей.
-    """
-
-    throttle_scope = 'anon'
-
-    def post(self, request, *args, **kwargs):
-        """
-        Авторизация пользователя.
-        Проверяет обязательные поля (пароль и email), создает токен для пользователя.
-        """
-        if {'email', 'password'}.issubset(request.data):
-            user = authenticate(request, username=request.data['email'], password=request.data['password'])
-            if user is not None:
-                if user.is_active:
-                    token, _ = Token.objects.get_or_create(user=user)
-                    return Response({'Status': True, 'Token': token.key}, status=200)
-
-            return Response({'Status': False,
-                             'Errors': 'Не удалось авторизовать'}, status=403)
-
-        return Response({'Status': False,
-                         'Errors': 'Не указаны все необходимые аргументы'}, status=401)
 
 
 class ContactView(APIView):

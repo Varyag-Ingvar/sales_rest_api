@@ -3,6 +3,7 @@ from users.models import User
 
 
 class Shop(models.Model):
+    """Магазин"""
     name = models.CharField(max_length=50, verbose_name='Название')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
     user = models.OneToOneField(User, verbose_name='Пользователь',
@@ -22,6 +23,7 @@ class Shop(models.Model):
 
 
 class Category(models.Model):
+    """Категория"""
     name = models.CharField(max_length=40, verbose_name='Название')
     shops = models.ManyToManyField(Shop, verbose_name='Магазины', related_name='categories', blank=True)
 
@@ -35,6 +37,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    """Продукт"""
     name = models.CharField(max_length=80, verbose_name='Название')
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', blank=True,
                                  on_delete=models.CASCADE)
@@ -49,6 +52,7 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
+    """Инфо о продукте"""
     model = models.CharField(max_length=80, verbose_name='Модель', blank=True)
     external_id = models.PositiveIntegerField(verbose_name='Внешний ИД')
     product = models.ForeignKey(Product, verbose_name='Продукт', related_name='product_infos', blank=True,

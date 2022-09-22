@@ -86,11 +86,10 @@ class ConfirmAccount(APIView):
     def post(self, request, *args, **kwargs):
         """
         Проверяет обязательные поля, статус токена и адрес почты,
-        и подтверждает регистрацию пользователя в системе
+        и подтверждает регистрацию пользователя
         """
         if {'email', 'token'}.issubset(request.data):
-            # variable token changed
-            token = Token.objects.filter(user__email=request.data['email'],
+            token = ConfirmEmailToken.objects.filter(user__email=request.data['email'],
                                                      key=request.data['token']).first()
             if token:
                 token.user.is_active = True
@@ -107,21 +106,46 @@ class ConfirmAccount(APIView):
 
 class AccountDetails(APIView):
     """
-    Класс для работы данными пользователя.
+    Класс для работы с данными пользователя
     """
 
     throttle_scope = 'user'
 
+    # получить данные
     def get(self, request, *args, **kwargs):
-        """
-        Получаем данные о пользователе.
-        """
         if not request.user.is_authenticated:
-            return Response({'Status': False,
-                             'Error': 'Log in required'}, status=403)
+            return Response({'Status': False, 'Error': 'Log in required'}, status=403)
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+    # Редактирование методом POST
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response({'Status': False, 'Error': 'Log in required'}, status=403)
+        # проверяем обязательные аргументы
+
+        if 'password' in request.data:
+            errors = {}
+            # проверяем пароль на сложность
+            try:
+                validate_password(request.data['password'])
+            except Exception as password_error:
+                error_array = []
+                # noinspection PyTypeChecker
+                for item in password_error:
+                    error_array.append(item)
+                return Response({'Status': False, 'Errors': {'password': error_array}})
+            else:
+                request.user.set_password(request.data['password'])
+
+        # проверяем остальные данные
+        user_serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            return Response({'Status': True})
+        else:
+            return Response({'Status': False, 'Errors': user_serializer.errors})
 
 
 class ContactView(APIView):
@@ -131,7 +155,7 @@ class ContactView(APIView):
 
     def get(self, request, *args, **kwargs):
         """
-        Проверка авторизации и выдача информации о контактных данных покупателя.
+        Проверка авторизации и выдача информации о контактных данных покупателя
         """
 
         if not request.user.is_authenticated:

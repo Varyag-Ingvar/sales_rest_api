@@ -89,7 +89,7 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.postgresql',
     #     'NAME': 'sales_rest_api',
     #     'USER': 'postgres',
-    #     'PASSWORD': 'psql55155318',
+    #     'PASSWORD': 'postgres',
     #     'HOST': '127.0.0.1',
     # }
 }
@@ -138,14 +138,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']
+
 # Email Settings:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_HOST_USER = '........@gmail.com'
-# EMAIL_HOST_PASSWORD = '..........'
-# EMAIL_PORT = '465'
-# EMAIL_USE_SSL = True
-# SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'someadress@gmail.com'
+EMAIL_HOST_PASSWORD = 'somepassword$123'
+EMAIL_PORT = '465'
+EMAIL_USE_SSL = True
+SERVER_EMAIL = EMAIL_HOST_USER
 
 
 REST_FRAMEWORK = {
